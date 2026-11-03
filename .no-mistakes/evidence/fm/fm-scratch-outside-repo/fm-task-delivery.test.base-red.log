@@ -1,0 +1,11 @@
+ok - fm-spawn/fm-promote: authorized intent preserves exact words and refuses operator-address lines
+ok - fm-spawn: every legacy worker receives scoped role instructions without changing project or primary instructions
+ok - fm-spawn: a ship spawn requires a valid explicit mode and yolo before anything is created
+ok - fm-spawn: scout and secondmate spawns refuse ship delivery flags
+ok - fm-spawn: the brief's recorded mode and the spawn's explicit mode must agree
+ok - fm-spawn: a rigor downgrade against the registered posture is announced, never blocked
+ok - fm-spawn: a scout spawn resolves no delivery posture from the registry
+ok - fm-promote: promotion requires the delivery contract and records it exactly once
+ok - fm-promote: an opted-in home sends a publishing promotion on a project with origin back to origin's default branch
+ok - fm-promote: a symlinked task record is refused and its target is left untouched
+not ok - no-mistakes: /private/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T/fm-task-delivery.te1oJ1/promote-dod/payload-promote-dod-no-mistakes omitted the rule keeping project copies outside every git repository

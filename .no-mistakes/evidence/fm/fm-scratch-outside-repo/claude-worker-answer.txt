@@ -1,0 +1,33 @@
+### claude -p with the generated direct-PR brief (2.1.317 (Claude Code))
+The worktree path below is the one `pwd -P` printed during the isolation check.
+I record the base commit before the first commit on `fm/ship-direct-pr`.
+
+WT=/absolute/path/printed/by/pwd-P
+BASE=$(git -C "$WT" rev-parse HEAD)
+
+Before copy (run before the change):
+BEFORE=$(mktemp -d "${TMPDIR:-/tmp}/ship-direct-pr-before.XXXXXX")
+git -C "$WT" archive "$BASE" | tar -x -C "$BEFORE"
+git -C "$BEFORE" rev-parse --git-dir 2>/dev/null && echo "inside a repo, stop"
+( cd "$BEFORE" && npm ci && npm run build )
+( cd "$BEFORE" && vercel deploy --yes ) | tee /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/ship-direct-pr/before-deploy.txt
+
+After copy (run once the change is committed):
+AFTER=$(mktemp -d "${TMPDIR:-/tmp}/ship-direct-pr-after.XXXXXX")
+git -C "$WT" archive HEAD | tar -x -C "$AFTER"
+git -C "$AFTER" rev-parse --git-dir 2>/dev/null && echo "inside a repo, stop"
+( cd "$AFTER" && npm ci && npm run build )
+( cd "$AFTER" && vercel deploy --yes ) | tee /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/ship-direct-pr/after-deploy.txt
+
+Cleanup after comparing the two previews:
+rm -rf "$BEFORE" "$AFTER"
+
+Notes on the commands:
+- `git archive` exports only committed files and leaves out `.git`, so each copy matches an exact commit and is not itself a repository.
+- The `rev-parse` check confirms that no enclosing repository sits above the copy.
+- Every `cd` runs inside a `( ... )` subshell, so no command starts with `cd`.
+- Only the deploy logs with the preview URLs go into the task data directory.
+- If the worktree has a `.vercel/project.json`, I would copy it into both copies before deploying so both previews land in the same Vercel project.
+
+Why this location: a fresh `mktemp -d` directory directly under the system temp root is outside the worktree, the firstmate checkout and every other git repository, so `vercel deploy` cannot pick up an enclosing repository's HEAD commit or author and attach it to the deploy.
+rc=0

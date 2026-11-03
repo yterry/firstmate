@@ -1,0 +1,17 @@
+$ FM_HOME=$LAB bin/fm-promote.sh scout-promo --mode direct-PR --yolo off
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+promoted scout-promo to ship mode=direct-PR yolo=off (teardown protection restored)
+wrote ship instructions for mode=direct-PR: /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/scout-promo/ship-instructions.md
+next: FM_HOME=/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ bin/fm-send.sh fm-scout-promo "$(cat /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/scout-promo/ship
+rc=0
+brief.md
+ship-instructions.md
+== rule lines in delivered ship-instructions.md and relaunch brief.md:
+/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/scout-promo/ship-instructions.md:25:Put any copy of the project that you build, deploy, or run project tooling against in a fresh temporary directory outside every git repository, never under `/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/scout-promo/`, because that directory usually sits inside a firstmate git checkout and such tools read the enclosing repository, for example attaching its HEAD commit and author to a deploy.
+/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/scout-promo/brief.md:112:Put any copy of the project that you build, deploy, or run project tooling against in a fresh temporary directory outside every git repository, never under `/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/scout-promo/`, because that directory usually sits inside a firstmate git checkout and such tools read the enclosing repository, for example attaching its HEAD commit and author to a deploy.

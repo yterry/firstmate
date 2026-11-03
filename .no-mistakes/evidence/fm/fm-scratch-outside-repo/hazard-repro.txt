@@ -1,0 +1,12 @@
+## Forbidden placement (what the incident worker did): copy of project tree under $DATA/ship-direct-pr/
+$ pwd: /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T/fm-lab.ogBVqQ/data/ship-direct-pr/after
+$ git rev-parse --show-toplevel
+/private/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T/fm-lab.ogBVqQ
+$ git log -1 --format='%an <%ae> %s'
+Upstream Stranger <stranger@example.org> upstream firstmate commit
+
+## Placement the new rule requires: fresh temp dir outside every git repository
+$ pwd: /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T/fm-deploycopy.47scyk
+$ git rev-parse --show-toplevel
+fatal: not a git repository (or any of the parent directories): .git
+rc=128

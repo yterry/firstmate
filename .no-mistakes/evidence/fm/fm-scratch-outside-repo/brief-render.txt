@@ -1,0 +1,16 @@
+== bin/fm-brief.sh ship-no-mistakes fixture-project --mode no-mistakes (rc=0) -> /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/ship-no-mistakes/brief.md, # Rules item 2:
+2. Keep project edits inside this worktree; keep proof and scratch output outside it, under `/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/ship-no-mistakes/` or a temporary directory.
+   Put any copy of the project that you build, deploy, or run project tooling against in a fresh temporary directory outside every git repository, never under `/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/ship-no-mistakes/`, because that directory usually sits inside a firstmate git checkout and such tools read the enclosing repository, for example attaching its HEAD commit and author to a deploy.
+   Outside the worktree, write only that task material and the status and steering-inbox records authorized below.
+   Leave the worktree clean before reporting done.
+== bin/fm-brief.sh ship-direct-pr fixture-project --mode direct-PR (rc=0) -> /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/ship-direct-pr/brief.md, # Rules item 2:
+2. Keep project edits inside this worktree; keep proof and scratch output outside it, under `/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/ship-direct-pr/` or a temporary directory.
+   Put any copy of the project that you build, deploy, or run project tooling against in a fresh temporary directory outside every git repository, never under `/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/ship-direct-pr/`, because that directory usually sits inside a firstmate git checkout and such tools read the enclosing repository, for example attaching its HEAD commit and author to a deploy.
+   Outside the worktree, write only that task material and the status and steering-inbox records authorized below.
+   Leave the worktree clean before reporting done.
+== bin/fm-brief.sh ship-local-only fixture-project --mode local-only (rc=0) -> /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/ship-local-only/brief.md, # Rules item 2:
+2. Keep project edits inside this worktree; keep proof and scratch output outside it, under `/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/ship-local-only/` or a temporary directory.
+   Put any copy of the project that you build, deploy, or run project tooling against in a fresh temporary directory outside every git repository, never under `/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.ogBVqQ/data/ship-local-only/`, because that directory usually sits inside a firstmate git checkout and such tools read the enclosing repository, for example attaching its HEAD commit and author to a deploy.
+   Outside the worktree, write only that task material and the status and steering-inbox records authorized below.
+   Leave the worktree clean before reporting done.
+== --scout rc=0; copy rule present in scout brief: 0
