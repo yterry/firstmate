@@ -1,0 +1,15 @@
+# Base commit 65a9a51f: lines in an ordinary no-mistakes ship brief naming a harness-specific invocation
+102:Firstmate will then instruct you to run /no-mistakes to validate and ship a PR.
+106:Follow the guidance no-mistakes itself provides for the mechanics: it loads when you invoke /no-mistakes, and `no-mistakes axi run --help` plus the `help` lines in each `axi` response are authoritative and version-matched to the installed binary.
+133:After /no-mistakes reports CI green (the CI-ready return point - do not wait for it to keep monitoring in the background until merge), read the PR back from the forge and confirm it is not a draft (`gh-axi pr view <number>` must print `draft: no`, where <number> is the PR number from your PR URL); if it is a draft, mark it ready with `gh-axi pr ready <number>`.
+136:That CI-ready `done:` is accepted only when this copy's HEAD - your latest commit - is one the /no-mistakes run pushed, so commit nothing after the run; the check tests that commit, not merely that a branch moved.
+
+# Target commit c281c6b2: same scaffold
+(none)
+
+# Target: harness-neutral lines
+102:Firstmate will then instruct you to run the no-mistakes skill to validate and ship a PR.
+106:Follow the guidance no-mistakes itself provides for the mechanics: it loads when you invoke the no-mistakes skill, and `no-mistakes axi run --help` plus the `help` lines in each `axi` response are authoritative and version-matched to the installed binary.
+114:This replaces the no-mistakes skill's advice to enrich `--intent` with decisions and tradeoffs; that advice does not apply to Firstmate-dispatched work.
+133:After the no-mistakes skill reports CI green (the CI-ready return point - do not wait for it to keep monitoring in the background until merge), read the PR back from the forge and confirm it is not a draft (`gh-axi pr view <number>` must print `draft: no`, where <number> is the PR number from your PR URL); if it is a draft, mark it ready with `gh-axi pr ready <number>`.
+136:That CI-ready `done:` is accepted only when this copy's HEAD - your latest commit - is one the no-mistakes run pushed, so commit nothing after the run; the check tests that commit, not merely that a branch moved.

@@ -1,0 +1,21 @@
+Reading additional input from stdin...
+OpenAI Codex v0.164.0
+--------
+workdir: /private/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T/fm-codexprobe.lT6fLz
+model: gpt-6.1-sol
+provider: openai
+approval: on-request
+sandbox: read-only
+reasoning effort: ultra
+reasoning summaries: none
+session id: 01a1afd7-7674-7da2-a64e-f32372642a6c
+--------
+user
+You are a Codex worker. Your task brief contains this instruction: "Follow the guidance no-mistakes itself provides for the mechanics: it loads when you invoke the no-mistakes skill, and `no-mistakes axi run --help` plus the `help` lines in each `axi` response are authoritative and version-matched to the installed binary.". Do not run any commands or modify files. In two or three short lines answer: (1) Is a skill named no-mistakes available to you in this session (check your skills list)? (2) What exact text would you type in the Codex composer, or what would you do, to invoke it?
+codex
+1. Yes, `no-mistakes` is available in this session’s skills list.
+2. Type `$no-mistakes` in the Codex composer and submit it.
+tokens used
+14,117
+1. Yes, `no-mistakes` is available in this session’s skills list.
+2. Type `$no-mistakes` in the Codex composer and submit it.

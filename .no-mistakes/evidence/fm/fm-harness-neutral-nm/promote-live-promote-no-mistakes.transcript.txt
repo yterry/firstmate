@@ -1,0 +1,11 @@
+$ bin/fm-promote.sh live-promote-no-mistakes --mode no-mistakes --yolo off  (exit 0)
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+promoted live-promote-no-mistakes to ship mode=no-mistakes yolo=off (teardown protection restored)
+wrote ship instructions for mode=no-mistakes: /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.hS5mjX/data/live-promote-no-mistakes/ship-instructions.md
+next: FM_HOME=/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.hS5mjX bin/fm-send.sh fm-live-promote-no-mistakes "$(cat /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.hS5mjX/data/live-promote-no-mistakes/ship-instructions.md)"

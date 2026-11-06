@@ -1,0 +1,5 @@
+$ bin/fm-promote.sh live-promote-direct-pr --mode direct-PR --yolo off  (exit 0)
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+promoted live-promote-direct-pr to ship mode=direct-PR yolo=off (teardown protection restored)
+wrote ship instructions for mode=direct-PR: /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.hS5mjX/data/live-promote-direct-pr/ship-instructions.md
+next: FM_HOME=/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.hS5mjX bin/fm-send.sh fm-live-promote-direct-pr "$(cat /var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-lab.hS5mjX/data/live-promote-direct-pr/ship-instructions.md)"
