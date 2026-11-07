@@ -1,0 +1,33 @@
+# before completion, the armed poll prints nothing:
+$ state/ado-1.check.sh
+exit=0 (no output)
+$ bin/fm-pr-merge.sh ado-1 https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/42 --expected-head 84d6353dc9a068710e4b70595d8d87df2af466cb -- --squash
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+armed: state/ado-1.check.sh
+verified: https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/42 is active and mergeable, with every branch policy passing at head 84d6353dc9a068710e4b70595d8d87df2af466cb
+verified: https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/42 is completed from head 84d6353dc9a068710e4b70595d8d87df2af466cb
+exit=0
+
+# completion request (az rest) actually sent:
+rest --method patch --url https://dev.azure.com/fm-lab/11111111-2222-3333-4444-555555555555/_apis/git/repositories/66666666-7777-8888-9999-000000000000/pullrequests/42?api-version=7.1 --resource 499b84ac-1321-427f-aa17-267ca6975798 --headers Content-Type=application/json --body @/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T//fm-azure-devops-complete.PE3JpR --only-show-errors --output json
+{"status":"completed","lastMergeSourceCommit":{"commitId":"84d6353dc9a068710e4b70595d8d87df2af466cb"},"completionOptions":{"bypassPolicy":false,"deleteSourceBranch":false,"mergeStrategy":"squash"}}
+
+# server PR 42:
+{"status":"completed","lastMergeSourceCommit":{"commitId":"84d6353dc9a068710e4b70595d8d87df2af466cb"},"lastMergeCommit":{"commitId":"d6f2edb47c015c50e6573f7983c82411f0c05e08"},"completionOptions":{"mergeStrategy":"squash"}}
+# server main:
+d6f2edb Merged PR 42 (squash)
+70594a4 init
+
+# after completion, the armed poll wakes:
+$ state/ado-1.check.sh
+merged
+exit=0
+
+$ cat state/ado-1.meta
+window=fm-ado-1
+worktree=/private/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T/fm-lab.EEjEan/wt
+project=/private/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T/fm-lab.EEjEan/project
+kind=ship
+mode=direct-PR
+branch=fm/ado-1
+pr=https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/42

@@ -1,0 +1,17 @@
+# live source head of PR 42 on the simulated server: 84d6353dc9a068710e4b70595d8d87df2af466cb
+$ bin/fm-pr-merge.sh ado-1 https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/42 --expected-head 70594a4a8052c17f52d9040ba1f9c0ece5b0674f -- --squash
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+armed: state/ado-1.check.sh
+error: refusing to merge https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/42
+  - the live head is "84d6353dc9a068710e4b70595d8d87df2af466cb", not the expected head 70594a4a8052c17f52d9040ba1f9c0ece5b0674f
+exit=1
+
+# az calls made (no "rest --method patch" means no completion was attempted):
+extension show --name azure-devops --output none
+repos pr show --id 42 --organization https://dev.azure.com/fm-lab --detect false --only-show-errors --output json
+repos pr show --id 42 --organization https://dev.azure.com/fm-lab --detect false --only-show-errors --output json
+repos pr policy list --id 42 --organization https://dev.azure.com/fm-lab --detect false --only-show-errors --output json
+repos pr show --id 42 --organization https://dev.azure.com/fm-lab --detect false --only-show-errors --output json
+
+# PR 42 status on the server after the refusal:
+{"status":"active","lastMergeCommit":null}

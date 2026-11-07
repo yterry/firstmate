@@ -1,0 +1,21 @@
+# server: PR 42 completed from 84d6353 (squash d6f2edb), source branch deleted, main moved on (d9ff061 rewords feature.txt)
+# worktree carries an extra local commit that was never in the pull request
+2019d45 later local commit not in the pull request
+84d6353 add feature for ado-1
+70594a4 init
+$ bin/fm-teardown.sh ado-1
+fm-gate-refuse: gate agent lifecycle permitted only against lab home <lab>/home
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+REFUSED: worktree <lab>/wt has work not on any remote and not landed.
+unpushed commits:
+2019d45 later local commit not in the pull request
+84d6353 add feature for ado-1
+Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+exit=1
+
+# az reads made:
+repos pr show --id 42 --organization https://dev.azure.com/fm-lab --detect false --only-show-errors --output json
+# endpoint stub calls (expect none - refusal precedes any destructive step):
+# worktree still present:
+<lab>/wt

@@ -1,0 +1,27 @@
+# PR 42 head verified by the caller: 84d6353dc9a068710e4b70595d8d87df2af466cb; a racing push lands on fm/ado-1 just before the completion PATCH
+$ bin/fm-pr-merge.sh ado-1 https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/42 --expected-head 84d6353dc9a068710e4b70595d8d87df2af466cb -- --squash
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+armed: state/ado-1.check.sh
+verified: https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/42 is active and mergeable, with every branch policy passing at head 84d6353dc9a068710e4b70595d8d87df2af466cb
+error: > ERROR: Conflict({"$id":"1","innerException":null,"message":"TF401192: The source branch has been modified since the last merge attempt.","typeName":"Microsoft.TeamFoundation.Git.Server.GitPullRequestStaleException"})
+error: the completion request for https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/42 failed, and the pull request has not read back as completed from head 84d6353dc9a068710e4b70595d8d87df2af466cb
+exit=1
+
+# racing head: 4b5ea073a839c30d5dc0f442982a7da7db8126d1
+# completion body sent:
+{
+  "status": "completed",
+  "lastMergeSourceCommit": {
+    "commitId": "84d6353dc9a068710e4b70595d8d87df2af466cb"
+  },
+  "completionOptions": {
+    "bypassPolicy": false,
+    "deleteSourceBranch": false,
+    "mergeStrategy": "squash"
+  }
+}
+
+# PR 42 on the server afterwards:
+{"status":"active","lastMergeCommit":null}
+# server main:
+70594a4 init

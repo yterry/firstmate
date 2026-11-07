@@ -1,0 +1,9 @@
+$ bin/fm-project-mode.sh --forge lab-repo
+azure-devops
+exit=0
+$ bin/fm-project-mode.sh lab-repo
+direct-PR off
+exit=0
+$ bin/fm-brief.sh ado-1 lab-repo --mode direct-PR --forge azure-devops
+scaffolded: /private/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T/fm-lab.EEjEan/home/data/ado-1/brief.md (ship, mode=direct-PR forge=azure-devops; replace {TASK} and {FIRSTMATE_SPEC})
+exit=0

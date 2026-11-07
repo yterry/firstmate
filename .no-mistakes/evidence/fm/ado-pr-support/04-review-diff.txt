@@ -1,0 +1,21 @@
+# the simulated origin carries refs/pull/42/merge (a stale merge preview containing preview-only.txt); no refs/pull/42/head exists
+$ git ls-remote origin
+70594a4a8052c17f52d9040ba1f9c0ece5b0674f	HEAD
+84d6353dc9a068710e4b70595d8d87df2af466cb	refs/heads/fm/ado-1
+70594a4a8052c17f52d9040ba1f9c0ece5b0674f	refs/heads/main
+4eb42a4f93bce6f3095c604859ec631f393536f0	refs/pull/42/merge
+$ bin/fm-review-diff.sh ado-1
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+warning: PR head unavailable; diff may lag the open PR (using local branch fm/ado-1)
+diff base: origin/main
+ feature.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/feature.txt b/feature.txt
+new file mode 100644
+index 0000000..a7453f0
+--- /dev/null
++++ b/feature.txt
+@@ -0,0 +1 @@
++feature
+exit=0

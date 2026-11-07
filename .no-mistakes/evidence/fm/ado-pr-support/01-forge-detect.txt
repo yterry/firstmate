@@ -1,0 +1,12 @@
+$ bin/fm-forge-detect.sh <lab>/project   # origin https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo
+forge=azure-devops evidence=origin remote host dev.azure.com is an Azure DevOps Services host
+exit=0
+$ bin/fm-forge-detect.sh <lab>/pat-clone   # origin https://user:SECRETPAT123@Fm-Lab.VisualStudio.com/DefaultCollection/P/_git/r
+forge=azure-devops evidence=origin remote host fm-lab.visualstudio.com is an Azure DevOps Services host
+exit=0
+$ bin/fm-forge-detect.sh <lab>/ssh-clone   # origin git@ssh.dev.azure.com:v3/fm-lab/P/r
+forge=azure-devops evidence=origin remote host ssh.dev.azure.com is an Azure DevOps Services host
+exit=0
+$ bin/fm-forge-detect.sh <lab>/spoof-clone   # origin https://dev.azure.com.evil.example/fm-lab/P/_git/r
+forge=none
+exit=0

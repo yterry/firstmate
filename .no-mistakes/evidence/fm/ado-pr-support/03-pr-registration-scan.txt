@@ -1,0 +1,32 @@
+# state/<task>.status done: lines name Azure DevOps PR URLs 42 (normal), 43 (id belongs to another repository), 44 (draft)
+$ bin/fm-pr-check.sh scan
+ado-draft reported https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/44 in a done line, but it was not recorded: https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/44 is a draft pull request; a draft cannot be merged, so merge monitoring would wait for an event that cannot occur - mark it ready for review and arm again, or declare a wait instead of done if the draft is deliberate
+ado-other reported https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/43 in a done line, but it was not recorded: https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/43 does not name a pull request in that project and repository: Azure DevOps reads pull request 43 back as another repository's
+exit=0
+
+$ cat state/ado-1.meta
+window=fm-ado-1
+worktree=/private/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T/fm-lab.EEjEan/wt
+project=/private/var/folders/1z/j7ytjx2n4qz12s9n0dwh_j0h0000gn/T/fm-lab.EEjEan/project
+kind=ship
+mode=direct-PR
+branch=fm/ado-1
+pr=https://dev.azure.com/fm-lab/Lab%20Project/_git/lab-repo/pullrequest/42
+
+$ grep pr= state/ado-other.meta state/ado-draft.meta  (expect nothing recorded)
+(none)
+
+$ ls state
+ado-1.check.sh
+ado-1.meta
+ado-1.pr-poll
+ado-1.pr-poll-registration
+ado-1.status
+ado-draft.meta
+ado-draft.pr-register-refused
+ado-draft.status
+ado-other.meta
+ado-other.pr-register-refused
+ado-other.status
+contributions.check-trust
+contributions.check.sh
