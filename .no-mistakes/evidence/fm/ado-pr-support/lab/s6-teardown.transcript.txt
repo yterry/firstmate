@@ -1,0 +1,139 @@
+
+### A. Completed, but the worker kept committing after the pull request's head
+$ fm-pr-merge.sh later1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/later1.check.sh
+stdout: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is completed from head 055d29d1e7ea4248d7606f9d8ef8d7992e147d30
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is active and mergeable, with every branch policy passing at head 055d29d1e7ea4248d7606f9d8ef8d7992e147d30
+[exit 0]
+$ fm-teardown.sh later1
+stderr: fm-gate-refuse: gate agent lifecycle permitted only against lab home <scratch>/home
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: REFUSED: worktree <scratch>/wt-later1 has work not on any remote and not landed.
+stderr: unpushed commits:
+stderr: 0c9f3c8 later local commit not in the pull request
+stderr: 055d29d edit shared file for later1
+stderr: 7db517c add feature for later1
+stderr: Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+[exit 1]
+backlog state: in_flight
+CHECK ok   - later commit: teardown refuses
+CHECK ok   - later commit: says the work is not landed
+CHECK ok   - later commit: lists the unlanded commit
+CHECK ok   - later commit: the worktree is untouched
+CHECK ok   - later commit: the task record is kept
+CHECK ok   - later commit: the backlog item is not closed
+CHECK ok   - later commit: the worktree was never handed back
+
+### B. The pull request is still active (nothing completed), and its branch is gone from the forge
+$ fm-pr-check.sh active1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4218
+stdout: armed: state/active1.check.sh
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+[exit 0]
+$ fm-teardown.sh active1
+stderr: fm-gate-refuse: gate agent lifecycle permitted only against lab home <scratch>/home
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: REFUSED: worktree <scratch>/wt-active1 has work not on any remote and not landed.
+stderr: unpushed commits:
+stderr: 58419a5 edit shared file for active1
+stderr: ca6b251 add feature for active1
+stderr: Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+[exit 1]
+CHECK ok   - active: teardown refuses
+CHECK ok   - active: the pull request was read through az
+CHECK ok   - active: the worktree is untouched
+CHECK ok   - active: the task record is kept
+CHECK ok   - active: the backlog item is not closed
+CHECK ok   - active: the worktree was never handed back
+
+### C. The pull request was abandoned
+$ fm-teardown.sh active1
+stderr: fm-gate-refuse: gate agent lifecycle permitted only against lab home <scratch>/home
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: REFUSED: worktree <scratch>/wt-active1 has work not on any remote and not landed.
+stderr: unpushed commits:
+stderr: 58419a5 edit shared file for active1
+stderr: ca6b251 add feature for active1
+stderr: Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+[exit 1]
+CHECK ok   - abandoned: teardown refuses
+CHECK ok   - abandoned: the worktree is untouched
+CHECK ok   - abandoned: the task record is kept
+CHECK ok   - abandoned: the backlog item is not closed
+CHECK ok   - abandoned: the worktree was never handed back
+
+### D. The record says completed, but names no completion commit
+$ fm-teardown.sh active1
+stderr: fm-gate-refuse: gate agent lifecycle permitted only against lab home <scratch>/home
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: REFUSED: worktree <scratch>/wt-active1 has work not on any remote and not landed.
+stderr: unpushed commits:
+stderr: 58419a5 edit shared file for active1
+stderr: ca6b251 add feature for active1
+stderr: Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+[exit 1]
+CHECK ok   - completed without a completion commit: teardown refuses
+CHECK ok   - completed without a completion commit: the worktree is untouched
+CHECK ok   - completed without a completion commit: the task record is kept
+CHECK ok   - completed without a completion commit: the backlog item is not closed
+CHECK ok   - completed without a completion commit: the worktree was never handed back
+
+### E. The id reads back completed, but as another repository's pull request
+$ fm-teardown.sh active1
+stderr: fm-gate-refuse: gate agent lifecycle permitted only against lab home <scratch>/home
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: REFUSED: worktree <scratch>/wt-active1 has work not on any remote and not landed.
+stderr: unpushed commits:
+stderr: 58419a5 edit shared file for active1
+stderr: ca6b251 add feature for active1
+stderr: Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+[exit 1]
+CHECK ok   - another repository's completed pull request: teardown refuses
+CHECK ok   - another repository's completed pull request: the worktree is untouched
+CHECK ok   - another repository's completed pull request: the task record is kept
+CHECK ok   - another repository's completed pull request: the backlog item is not closed
+CHECK ok   - another repository's completed pull request: the worktree was never handed back
+
+### F. The record completed from an older source commit than the local work
+$ fm-pr-merge.sh older1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4219 -- --squash
+stdout: armed: state/older1.check.sh
+stdout: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4219 is completed from head c937a7d49c94dffdccd4c02a99129bbea76d42be
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4219 is active and mergeable, with every branch policy passing at head c937a7d49c94dffdccd4c02a99129bbea76d42be
+[exit 0]
+the forge record now says it completed from 2cdb91f6b5051f0f3f4d3afdcb7f935498f24b0a, one commit behind the local head c937a7d49c94dffdccd4c02a99129bbea76d42be
+$ fm-teardown.sh older1
+stderr: fm-gate-refuse: gate agent lifecycle permitted only against lab home <scratch>/home
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: REFUSED: worktree <scratch>/wt-older1 has work not on any remote and not landed.
+stderr: unpushed commits:
+stderr: c937a7d edit shared file for older1
+stderr: 2cdb91f add feature for older1
+stderr: Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+[exit 1]
+CHECK ok   - older source commit: teardown refuses
+CHECK ok   - older source commit: the worktree is untouched
+CHECK ok   - older source commit: the task record is kept
+CHECK ok   - older source commit: the backlog item is not closed
+CHECK ok   - older source commit: the worktree was never handed back
+
+### G. Control: the same kind of task, completed from its real head, is cleaned up
+$ fm-pr-merge.sh clean1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4220 -- --squash
+stdout: armed: state/clean1.check.sh
+stdout: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4220 is completed from head a2c3e03af24012213c8b57f833de51156192f5bf
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4220 is active and mergeable, with every branch policy passing at head a2c3e03af24012213c8b57f833de51156192f5bf
+[exit 0]
+$ fm-teardown.sh clean1
+stdout: lab-repo: synced e80dc93..4b89848
+stdout: teardown clean1 complete (window firstmate:fm-clean1, worktree <scratch>/wt-clean1)
+stdout: Backlog: clean1 is closed in <scratch>/home/data/backlog.md. Run bin/fm-tasks-axi.sh ready for dependency-cleared candidates, check date gates, and dispatch only work whose blockers are gone and date is due.
+stderr: fm-gate-refuse: gate agent lifecycle permitted only against lab home <scratch>/home
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+[exit 0]
+backlog state: done
+CHECK ok   - control: teardown succeeds
+CHECK ok   - control: the landed proof came from the pull request record
+CHECK ok   - control: the backlog item is closed with the pull request URL as a note
+
+### result: 0 check failure(s); simulator violations: 0

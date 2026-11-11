@@ -1,0 +1,139 @@
+
+### A. A draft pull request is refused by name; nothing is recorded or armed; it arms once published
+$ fm-pr-check.sh draft1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stderr: error: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is a draft pull request; a draft cannot be merged, so merge monitoring would wait for an event that cannot occur - mark it ready for review and arm again, or declare a wait instead of done if the draft is deliberate
+[exit 1]
+CHECK ok   - arming a draft exits non-zero
+CHECK ok   - the refusal names the draft state
+CHECK ok   - no pr= was recorded for the draft
+CHECK ok   - no poll was armed for the draft
+$ fm-pr-check.sh scan   (first sweep)
+draft1 reported https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 in a done line, but it was not recorded: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is a draft pull request; a draft cannot be merged, so merge monitoring would wait for an event that cannot occur - mark it ready for review and arm again, or declare a wait instead of done if the draft is deliberate
+CHECK ok   - the scan reports the refusal once, naming the task, the URL, and the reason
+$ fm-pr-check.sh scan   (second sweep, still a draft)
+
+[0 bytes]
+CHECK ok   - a later sweep stays silent while it is still a draft
+$ az repos pr update --id 4217 --organization https://fm-lab-org.visualstudio.com --draft false   (the worker publishes it)
+{"pullRequestId":4217,"isDraft":false}
+$ fm-pr-check.sh scan   (third sweep, now ready)
+
+[0 bytes]
+CHECK ok   - the published pull request is recorded without help
+CHECK ok   - its poll is armed
+
+### B. Both Azure DevOps Services URL forms arm, with and without DefaultCollection
+$ fm-pr-check.sh form1 https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4218
+stdout: armed: state/form1.check.sh
+[exit 0]
+CHECK ok   - form 1 arms: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4218
+CHECK ok   - form 1 records exactly the URL as written
+CHECK ok   - form 1 reads through its own organization URL only
+$ bash state/form1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - form 1: the armed poll is silent while active
+$ fm-pr-check.sh form2 https://fm-lab-org.visualstudio.com/Lab%20Project/_git/lab-repo/pullrequest/4219
+stdout: armed: state/form2.check.sh
+[exit 0]
+CHECK ok   - form 2 arms: https://fm-lab-org.visualstudio.com/Lab%20Project/_git/lab-repo/pullrequest/4219
+CHECK ok   - form 2 records exactly the URL as written
+CHECK ok   - form 2 reads through its own organization URL only
+$ bash state/form2.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - form 2: the armed poll is silent while active
+$ fm-pr-check.sh form3 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4220
+stdout: armed: state/form3.check.sh
+[exit 0]
+CHECK ok   - form 3 arms: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4220
+CHECK ok   - form 3 records exactly the URL as written
+CHECK ok   - form 3 reads through its own organization URL only
+$ bash state/form3.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - form 3: the armed poll is silent while active
+$ fm-pr-check.sh form4 https://dev.azure.com/fm-lab-org/lab%20project/_git/LAB-REPO/pullrequest/4221
+stdout: armed: state/form4.check.sh
+[exit 0]
+CHECK ok   - form 4 arms: https://dev.azure.com/fm-lab-org/lab%20project/_git/LAB-REPO/pullrequest/4221
+CHECK ok   - form 4 records exactly the URL as written
+CHECK ok   - form 4 reads through its own organization URL only
+$ bash state/form4.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - form 4: the armed poll is silent while active
+CHECK ok   - every task's armed poll is the same bytes as bin/fm-pr-poll.sh
+
+### C. A URL whose id reads back as another repository's or project's pull request is refused
+$ fm-pr-check.sh other1 https://dev.azure.com/fm-lab-org/Lab%20Project/_git/some-other-repo/pullrequest/4222
+stderr: error: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/some-other-repo/pullrequest/4222 does not name a pull request in that project and repository: Azure DevOps reads pull request 4222 back as another repository's
+[exit 1]
+CHECK ok   - refused: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/some-other-repo/pullrequest/4222
+CHECK ok   - the refusal says it reads back as another repository's
+CHECK ok   - nothing was recorded
+CHECK ok   - nothing was armed
+$ fm-pr-check.sh other1 https://dev.azure.com/fm-lab-org/Another%20Project/_git/lab-repo/pullrequest/4222
+stderr: error: https://dev.azure.com/fm-lab-org/Another%20Project/_git/lab-repo/pullrequest/4222 does not name a pull request in that project and repository: Azure DevOps reads pull request 4222 back as another repository's
+[exit 1]
+CHECK ok   - refused: https://dev.azure.com/fm-lab-org/Another%20Project/_git/lab-repo/pullrequest/4222
+CHECK ok   - the refusal says it reads back as another repository's
+CHECK ok   - nothing was recorded
+CHECK ok   - nothing was armed
+
+### D. Missing tooling refuses before anything is recorded
+$ fm-pr-check.sh other1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4222
+stderr: error: watching an Azure DevOps pull request requires the az azure-devops extension (az extension add --name azure-devops)
+[exit 1]
+CHECK ok   - no azure-devops extension refuses
+CHECK ok   - the refusal names the extension
+$ fm-pr-check.sh other1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4222
+stderr: error: watching an Azure DevOps pull request requires az and jq on PATH
+[exit 1]
+CHECK ok   - no az on PATH refuses
+CHECK ok   - the refusal names az and jq
+CHECK ok   - still nothing recorded or armed
+
+### E. Malformed or look-alike URLs are refused as invalid before any forge read
+http://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222                                     -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: http://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222
+https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequests/4222                                   -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequests/4222
+https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/0                                       -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/0
+https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/2147483648                              -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/2147483648
+https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222/                                   -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222/
+https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222?_a=files                           -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222?_a=files
+https://dev.azure.com/fm-lab-org/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4222                  -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4222
+https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo%2F..%2Fother/pullrequest/4222                       -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo%2F..%2Fother/pullrequest/4222
+https://dev.azure.com/fm-lab-org/Lab%20Project/_git/%2E%2E/pullrequest/4222                                      -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/%2E%2E/pullrequest/4222
+https://dev.azure.com/fm-lab-org/Lab%20project%2f/_git/lab-repo/pullrequest/4222                                 -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/Lab%20project%2f/_git/lab-repo/pullrequest/4222
+https://dev.azure.com/fm-lab-org/Lab Project/_git/lab-repo/pullrequest/4222                                      -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/Lab Project/_git/lab-repo/pullrequest/4222
+https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab%2Drepo/pullrequest/4222                                  -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab%2Drepo/pullrequest/4222
+https://dev.azure.com/-fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222                                   -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/-fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222
+https://dev.azure.com/fm-lab-org/Lab%20Project/lab-repo/pullrequest/4222                                         -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com/fm-lab-org/Lab%20Project/lab-repo/pullrequest/4222
+https://fm-lab-org.visualstudio.com/OtherCollection/Lab%20Project/_git/lab-repo/pullrequest/4222                 -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://fm-lab-org.visualstudio.com/OtherCollection/Lab%20Project/_git/lab-repo/pullrequest/4222
+https://FM-LAB-ORG.visualstudio.com/Lab%20Project/_git/lab-repo/pullrequest/4222                                 -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://FM-LAB-ORG.visualstudio.com/Lab%20Project/_git/lab-repo/pullrequest/4222
+https://fm-lab-org.visualstudio.com.evil.example/Lab%20Project/_git/lab-repo/pullrequest/4222                    -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://fm-lab-org.visualstudio.com.evil.example/Lab%20Project/_git/lab-repo/pullrequest/4222
+https://dev.azure.com.evil.example/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222                       -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://dev.azure.com.evil.example/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222
+https://user@dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222                               -> exit 2: error: invalid PR check request
+CHECK ok   - invalid: https://user@dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequest/4222
+CHECK ok   - no malformed URL reached az
+CHECK ok   - no malformed URL was recorded
+
+### result: 0 check failure(s); simulator violations: 0

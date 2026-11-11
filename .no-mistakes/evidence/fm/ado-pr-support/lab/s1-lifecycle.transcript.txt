@@ -1,0 +1,187 @@
+
+### 1. Intake: the clone's origin proposes the forge, and the registry binding is read
+$ git -C <scratch>/home/projects/lab-repo config --get remote.origin.url
+https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo
+[exit 0]
+$ fm fm-forge-detect.sh <scratch>/home/projects/lab-repo
+forge=azure-devops evidence=origin remote host dev.azure.com is an Azure DevOps Services host
+[exit 0]
+$ sed -n 3p <scratch>/home/data/projects.md
+- lab-repo [direct-PR forge=azure-devops] - Azure DevOps lab repository (added 2026-11-11)
+[exit 0]
+$ fm fm-project-mode.sh --forge lab-repo
+azure-devops
+[exit 0]
+CHECK ok   - forge-detect proposes azure-devops from the origin host
+CHECK ok   - the registry binding resolves to azure-devops
+
+### 2. Brief: the ship brief tells the worker to use az repos pr
+$ fm fm-brief.sh ado-life lab-repo --mode direct-PR --forge azure-devops
+scaffolded: <scratch>/home/data/ado-life/brief.md (ship, mode=direct-PR forge=azure-devops; replace {TASK} and {FIRSTMATE_SPEC})
+[exit 0]
+$ grep -n -E Delivery contract:|az repos pr|repository\.webUrl|Use the Azure CLI <scratch>/home/data/ado-life/brief.md
+29:3. Use the Azure CLI's az repos pr commands for Azure DevOps pull request operations and chrome-devtools-axi for browser operations.
+95:Delivery contract: mode=direct-PR forge=azure-devops
+99:When it is implemented and committed, push your branch and open a PR with `az repos pr create` that is ready for review, not a draft.
+100:Before you report done, read the PR back from the forge and confirm it is not a draft (`az repos pr show --id <id> --organization <org> --query isDraft` must print `false`, where <id> is the pull request id from your PR URL and <org> is its organization URL, `https://dev.azure.com/<org>` or `https://<org>.visualstudio.com`); if it is a draft, publish it with `az repos pr update --id <id> --organization <org> --draft false`.
+102:az prints an API URL in its own `url` field, which is not the PR URL: report `repository.webUrl` from `az repos pr show --id <id> --organization <org>` followed by `/pullrequest/<id>`.
+[exit 0]
+CHECK ok   - brief carries the azure-devops delivery contract
+CHECK ok   - brief names az repos pr create
+CHECK ok   - brief tells the worker to report repository.webUrl + /pullrequest/<id>
+CHECK ok   - brief does not tell the worker to use gh-axi for the pull request
+$ fm fm-brief.sh ado-life-nm lab-repo --mode no-mistakes --forge azure-devops
+scaffolded: <scratch>/home/data/ado-life-nm/brief.md (ship, mode=no-mistakes forge=azure-devops; replace {TASK} and {FIRSTMATE_SPEC})
+[exit 0]
+$ grep -n -E Delivery contract:|az repos pr <scratch>/home/data/ado-life-nm/brief.md
+30:3. Use the Azure CLI's az repos pr commands for Azure DevOps pull request operations and chrome-devtools-axi for browser operations.
+98:Delivery contract: mode=no-mistakes forge=azure-devops
+133:After /no-mistakes reports CI green (the CI-ready return point - do not wait for it to keep monitoring in the background until merge), read the PR back from the forge and confirm it is not a draft (`az repos pr show --id <id> --organization <org> --query isDraft` must print `false`, where <id> is the pull request id from your PR URL and <org> is its organization URL, `https://dev.azure.com/<org>` or `https://<org>.visualstudio.com`); if it is a draft, publish it with `az repos pr update --id <id> --organization <org> --draft false`.
+[exit 0]
+CHECK ok   - a no-mistakes brief carries the azure-devops delivery contract
+CHECK ok   - a no-mistakes brief has the worker read the pull request back with az repos pr
+$ fm-brief.sh ado-life-local lab-repo --mode local-only --forge azure-devops
+error: fm-brief.sh --forge: forge=azure-devops cannot ship mode=local-only - that mode publishes nothing, so a forge has no meaning there, and its landing would fast-forward local main with content the review server has never seen; ship no-mistakes or direct-PR, which publish through the forge
+[exit 1]
+CHECK ok   - a local-only brief refuses the azure-devops forge
+
+### 3. Worker: commits, pushes, opens the pull request the way the brief says, reports done
+pull request 4217 opened: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+$ az repos pr show --id 4217 --organization https://fm-lab-org.visualstudio.com --query isDraft
+false
+[exit 0]
+$ cat <scratch>/home/state/ado-life.status
+done [at=1794427633]: PR https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+[exit 0]
+
+### 4. Firstmate recognizes the reported link (the watcher's scan) and arms the watch
+$ fm fm-pr-check.sh scan
+[exit 0]
+$ grep -n ^pr <scratch>/home/state/ado-life.meta
+4:project=<scratch>/home/projects/lab-repo
+12:pr=https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+[exit 0]
+$ cat <scratch>/home/state/ado-life.pr-poll
+azure-devops
+https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+fm-lab-org.visualstudio.com
+DefaultCollection/Lab%20Project/_git/lab-repo
+4217
+[exit 0]
+CHECK ok   - scan recorded the reported URL as pr=
+CHECK ok   - no pr_head is recorded for Azure DevOps
+CHECK ok   - the poll is armed
+CHECK ok   - the armed poll is byte-identical to bin/fm-pr-poll.sh
+CHECK ok   - the sidecar records the azure-devops identity
+
+### 5. Watch: silent while the pull request is active
+$ bash state/ado-life.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - active pull request prints nothing
+
+### 6. Review: the local branch is diffed under the PR-head-unavailable warning
+$ fm-review-diff.sh ado-life --stat
+[exit 0]
+stdout: diff base: origin/main
+stdout:  feature.txt | 1 +
+stdout:  shared.txt  | 1 +
+stdout:  2 files changed, 2 insertions(+)
+stderr: warning: PR head unavailable; diff may lag the open PR (using local branch fm/ado-life)
+CHECK ok   - review warns the PR head is unavailable
+CHECK ok   - review shows the worker's files
+CHECK ok   - review never fetched the merge preview
+
+### 7. Completion: verified live, bound to the head, read back
+$ fm-pr-merge.sh ado-life https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/ado-life.check.sh
+stdout: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is completed from head 9d4ac44933c252ace9e0b99a551b03cbc8dde49a
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is active and mergeable, with every branch policy passing at head 9d4ac44933c252ace9e0b99a551b03cbc8dde49a
+[exit 0]
+$ cat <scratch>/sim/patch.log
+PATCH https://fm-lab-org.visualstudio.com/0a1b2c3d-1111-4222-8333-444455556666/_apis/git/repositories/9f8e7d6c-aaaa-4bbb-8ccc-ddddeeeeffff/pullrequests/4217?api-version=7.1 {"status":"completed","lastMergeSourceCommit":{"commitId":"9d4ac44933c252ace9e0b99a551b03cbc8dde49a"},"completionOptions":{"bypassPolicy":false,"deleteSourceBranch":false,"mergeStrategy":"squash"}}
+[exit 0]
+CHECK ok   - merge exits 0
+CHECK ok   - merge reports the verified head
+CHECK ok   - merge confirms the landing by read-back
+CHECK ok   - exactly one completion request was sent
+CHECK ok   - the completion names the verified head, squash, no bypass, no branch deletion
+CHECK ok   - the completion went to the repository-scoped route of the URL's host
+CHECK ok   - az repos pr update was never used to complete
+CHECK ok   - the target branch moved on the Azure DevOps repository
+CHECK ok   - the squash commit is one commit on top of the old target
+$ git -C <scratch>/origin.git log --oneline -3 refs/heads/main
+eaea3fa Merged PR 4217: Lab change for ado-life
+05518b7 repository baseline
+[exit 0]
+$ sed -n 1,8p <scratch>/home/state/ado-life.merge-authority
+fm-merge-authority-v1
+azure-devops
+fm-lab-org.visualstudio.com
+DefaultCollection/Lab%20Project/_git/lab-repo
+4217
+attended
+[exit 0]
+
+### 8. Watch: the same armed poll now reports the merge
+$ bash state/ado-life.check.sh
+merged
+[exit 0]
+CHECK ok   - completed pull request prints merged
+
+### 9. Cleanup: the source branch is deleted on the forge and main moves on, so only the completed record can prove the work landed
+$ git -C <scratch>/origin.git for-each-ref --format=%(refname) %(objectname:short)
+refs/heads/main 579386a
+[exit 0]
+$ git -C <scratch>/home/projects/lab-repo fetch -q --prune origin
+[exit 0]
+$ git -C <scratch>/home/projects/lab-repo for-each-ref --format=%(refname) %(objectname:short) refs/remotes
+refs/remotes/origin/HEAD 579386a
+refs/remotes/origin/main 579386a
+[exit 0]
+$ fm-teardown.sh ado-life
+stdout: lab-repo: synced 05518b7..579386a
+stdout: teardown ado-life complete (window firstmate:fm-ado-life, worktree <scratch>/wt-ado-life)
+stdout: Backlog: ado-life is closed in <scratch>/home/data/backlog.md. Run bin/fm-tasks-axi.sh ready for dependency-cleared candidates, check date gates, and dispatch only work whose blockers are gone and date is due.
+stderr: fm-gate-refuse: gate agent lifecycle permitted only against lab home <scratch>/home
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+[exit 0]
+$ cat <scratch>/sim/az.log
+repos pr show --id 4217 --organization https://fm-lab-org.visualstudio.com --detect false --only-show-errors --output json
+repos pr show --id 4217 --organization https://fm-lab-org.visualstudio.com --detect false --only-show-errors --output json
+[exit 0]
+CHECK ok   - teardown exits 0
+CHECK ok   - teardown read the pull request through az
+CHECK ok   - the task record is removed
+$ tasks-axi show ado-life --file data/backlog.md --full
+task:
+  id: ado-life
+  title: Azure DevOps lab task ado-life
+  state: done
+  blocked: no
+  blocked_by: none
+  held: no
+  hold_reason: "-"
+  hold_kind: "-"
+  hold_until: "-"
+  kind: ship
+  repo: "-"
+  priority: "-"
+  created: "-"
+  closed: 2026-11-11
+  deps: none
+  links: none
+  body: "Azure DevOps pull request https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217"
+[exit 0]
+CHECK ok   - the backlog item is done
+CHECK ok   - the backlog item records the pull request URL as a note
+
+### Other tools reached during the run (inert stubs)
+$ cat <scratch>/stub.log
+no-mistakes axi status
+treehouse return --force <scratch>/wt-ado-life
+tmux kill-window -t =firstmate:=fm-ado-life
+[exit 0]
+
+### result: 0 check failure(s); simulator violations: 0

@@ -1,0 +1,26 @@
+$ fm-crew-state.sh crew1   (pull request active)
+state: done · source: run-step · run passed: PR open · pr=https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+CHECK ok   - active: reports 'run passed: PR open'
+CHECK ok   - active: read through az by id in the URL's organization
+CHECK ok   - active: is not reported merged
+$ fm-crew-state.sh crew1   (pull request abandoned)
+state: done · source: run-step · run passed: PR closed · pr=https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+CHECK ok   - abandoned: reports 'run passed: PR closed'
+CHECK ok   - abandoned: read through az by id in the URL's organization
+CHECK ok   - abandoned: is not reported merged
+$ fm-crew-state.sh crew1   (pull request completed without a completion commit)
+state: done · source: run-step · run passed: PR state unknown (unreadable) · pr=https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+CHECK ok   - completed without a completion commit: reports 'run passed: PR state unknown (unreadable)'
+CHECK ok   - completed without a completion commit: read through az by id in the URL's organization
+CHECK ok   - completed without a completion commit: is not reported merged
+$ fm-crew-state.sh crew1   (pull request completed as another repository's)
+state: done · source: run-step · run passed: PR state unknown (unreadable) · pr=https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+CHECK ok   - completed as another repository's: reports 'run passed: PR state unknown (unreadable)'
+CHECK ok   - completed as another repository's: read through az by id in the URL's organization
+CHECK ok   - completed as another repository's: is not reported merged
+$ fm-crew-state.sh crew1   (pull request completed)
+state: done · source: run-step · run passed: PR merged · pr=https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+CHECK ok   - completed: reports 'run passed: PR merged'
+CHECK ok   - completed: read through az by id in the URL's organization
+
+### result: 0 check failure(s); simulator violations: 0

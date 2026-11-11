@@ -1,0 +1,6 @@
+tests/fm-review-diff.test.sh exit=0 duration_ms=39850 gate_skip=false
+tests/fm-crew-state.test.sh exit=0 duration_ms=471508 gate_skip=false
+tests/fm-project-mode.test.sh exit=0 duration_ms=1898 gate_skip=false
+tests/fm-forge-detect.test.sh exit=0 duration_ms=2617 gate_skip=false
+tests/fm-dod-lib.test.sh exit=0 duration_ms=13202 gate_skip=false
+tests/fm-task-delivery.test.sh exit=0 duration_ms=179514 gate_skip=false

@@ -1,0 +1,62 @@
+$ fm-pr-check.sh watch1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stdout: armed: state/watch1.check.sh
+[exit 0]
+CHECK ok   - armed
+
+### active
+$ bash state/watch1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - active: silent
+
+### abandoned
+$ bash state/watch1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - abandoned: silent
+
+### completed, but the record names no completion commit
+$ bash state/watch1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - completed without lastMergeCommit: silent
+
+### completed, with a malformed completion commit
+$ bash state/watch1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - completed with a malformed lastMergeCommit: silent
+
+### completed with a completion commit, but the id reads back as another repository's pull request
+$ bash state/watch1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - another repository's completed pull request: silent
+
+### completed with a completion commit, in another project
+$ bash state/watch1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - another project's completed pull request: silent
+
+### the forge read fails
+$ bash state/watch1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - unreadable answer: silent
+
+### a doctored sidecar that points the same poll at another repository
+$ bash state/watch1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - doctored sidecar: silent
+CHECK ok   - doctored sidecar: the forge is never asked
+
+### this pull request, completed, with its completion commit
+$ bash state/watch1.check.sh
+merged
+[exit 0, 6 bytes of output]
+CHECK ok   - real completion: prints merged
+CHECK ok   - the poll reads with --detect false through the URL's organization
+
+### result: 0 check failure(s); simulator violations: 0

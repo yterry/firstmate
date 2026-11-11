@@ -1,0 +1,133 @@
+
+### A. A push lands between verification and the completion request
+$ fm-pr-check.sh race1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stdout: armed: state/race1.check.sh
+[exit 0]
+$ fm-pr-merge.sh race1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/race1.check.sh
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is active and mergeable, with every branch policy passing at head 48b20a0bbdb1618795d9ab3032428728cad3f270
+stderr: error: > ERROR: Conflict({"$id":"1","innerException":null,"message":"TF401192: The source branch has been modified since the last merge attempt.","typeName":"Microsoft.TeamFoundation.Git.Server.GitPullRequestStaleException, Microsoft.TeamFoundation.Git.Server","typeKey":"GitPullRequestStaleException","errorCode":0,"eventId":3000})
+stderr: error: the completion request for https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 failed, and the pull request has not read back as completed from head 48b20a0bbdb1618795d9ab3032428728cad3f270
+[exit 1]
+source branch tip on the forge is now abe4c237c6da66faf4a862a2ef3434b38cd7d596 (verified head was 48b20a0bbdb1618795d9ab3032428728cad3f270)
+$ cat <scratch>/sim/patch.log
+PATCH https://fm-lab-org.visualstudio.com/0a1b2c3d-1111-4222-8333-444455556666/_apis/git/repositories/9f8e7d6c-aaaa-4bbb-8ccc-ddddeeeeffff/pullrequests/4217?api-version=7.1 {"status":"completed","lastMergeSourceCommit":{"commitId":"48b20a0bbdb1618795d9ab3032428728cad3f270"},"completionOptions":{"bypassPolicy":false,"deleteSourceBranch":false,"mergeStrategy":"squash"}}
+[exit 0]
+CHECK ok   - race: the late push really landed on the source branch
+CHECK ok   - race: fm-pr-merge exits non-zero
+CHECK ok   - race: Azure DevOps' TF401192 refusal is shown
+CHECK ok   - race: the failure says nothing read back as completed from the verified head
+CHECK ok   - race: exactly one completion request, naming the verified head, never the new tip
+CHECK ok   - race: the target branch did not move
+CHECK ok   - race: the pull request is still active
+CHECK ok   - race: no landed-merge authority was persisted
+$ bash state/race1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - race: the poll stays armed and silent
+
+### B. Azure DevOps has not recomputed the merge after a push (its reported source commit lags the branch)
+$ fm-pr-merge.sh race1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/race1.check.sh
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is active and mergeable, with every branch policy passing at head 48b20a0bbdb1618795d9ab3032428728cad3f270
+stderr: error: > ERROR: Conflict({"$id":"1","innerException":null,"message":"TF401192: The source branch has been modified since the last merge attempt.","typeName":"Microsoft.TeamFoundation.Git.Server.GitPullRequestStaleException, Microsoft.TeamFoundation.Git.Server","typeKey":"GitPullRequestStaleException","errorCode":0,"eventId":3000})
+stderr: error: the completion request for https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 failed, and the pull request has not read back as completed from head 48b20a0bbdb1618795d9ab3032428728cad3f270
+[exit 1]
+CHECK ok   - lag: refused by Azure DevOps with TF401192, not landed
+CHECK ok   - lag: the target branch did not move
+
+### C. The head moves while the branch policies are being read
+$ fm-pr-merge.sh move1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4218 -- --squash
+stdout: armed: state/move1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4218
+stderr:   - the pull request changed while its policies were read (head be5d64da78f62f0f96ed02a57b1542e23b9d352a became 66446d885eb05d8a1bcb7cd85ff0d1b895232768); retry against its current state
+[exit 1]
+CHECK ok   - moved: refused
+CHECK ok   - moved: names the head that moved
+CHECK ok   - moved: no completion request was sent
+CHECK ok   - moved: the target branch did not move
+
+### D. --expected-head pins the commit that was reviewed
+reviewed head 398a9d39f4d0c5379f97ce14d9a68adbe07a9c23, live head after a later push 6ce0db47c4505f2a901173a2fdc8d314ff579f34; every policy is green at the live head
+$ fm-pr-merge.sh pin1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4219 --expected-head 398a9d39f4d0c5379f97ce14d9a68adbe07a9c23 -- --squash
+stdout: armed: state/pin1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4219
+stderr:   - the live head is "6ce0db47c4505f2a901173a2fdc8d314ff579f34", not the expected head 398a9d39f4d0c5379f97ce14d9a68adbe07a9c23
+[exit 1]
+CHECK ok   - expected-head mismatch: refused
+CHECK ok   - expected-head mismatch: names both heads
+CHECK ok   - expected-head mismatch: no completion request was sent
+CHECK ok   - expected-head mismatch: the pull request is still active
+CHECK ok   - expected-head mismatch: the target branch did not move
+$ fm-pr-merge.sh pin1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4219 --expected-head abc123 -- --squash
+stderr: error: --expected-head requires a full lowercase commit sha
+[exit 2]
+CHECK ok   - expected-head 'abc123' is rejected as malformed (exit 2), nothing sent
+$ fm-pr-merge.sh pin1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4219 --expected-head 6ce0db47c4505f2a901173a2fdc8d314ff579f3 -- --squash
+stderr: error: --expected-head requires a full lowercase commit sha
+[exit 2]
+CHECK ok   - expected-head '6ce0db47c4505f2a901173a2fdc8d314ff579f3' is rejected as malformed (exit 2), nothing sent
+$ fm-pr-merge.sh pin1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4219 --expected-head 6CE0DB47C4505F2A901173A2FDC8D314FF579F34 -- --squash
+stderr: error: --expected-head requires a full lowercase commit sha
+[exit 2]
+CHECK ok   - expected-head '6CE0DB47C4505F2A901173A2FDC8D314FF579F34' is rejected as malformed (exit 2), nothing sent
+$ fm-pr-merge.sh pin1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4219 --expected-head 6ce0db47c4505f2a901173a2fdc8d314ff579f34 -- --squash
+stdout: armed: state/pin1.check.sh
+stdout: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4219 is completed from head 6ce0db47c4505f2a901173a2fdc8d314ff579f34
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4219 is active and mergeable, with every branch policy passing at head 6ce0db47c4505f2a901173a2fdc8d314ff579f34
+[exit 0]
+CHECK ok   - expected-head match: completes
+CHECK ok   - expected-head match: the completion names exactly that head
+CHECK ok   - expected-head match: landing confirmed from that head
+CHECK ok   - expected-head match: the forge record completed from that head
+
+### E. The response is lost after Azure DevOps applied the completion
+$ fm-pr-merge.sh lost1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4220 -- --squash
+stdout: armed: state/lost1.check.sh
+stdout: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4220 is completed from head 3e66423b83ab1e2da43bf0cb3f7350e280f160c1
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4220 is active and mergeable, with every branch policy passing at head 3e66423b83ab1e2da43bf0cb3f7350e280f160c1
+[exit 0]
+CHECK ok   - lost response: one request, and the read-back shows it landed, so the run succeeds
+CHECK ok   - lost response: landing confirmed from the verified head
+CHECK ok   - lost response: the merge authority is persisted
+
+### F. Azure DevOps accepts the completion and finishes it a few reads later
+$ fm-pr-merge.sh async1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4221 -- --squash
+stdout: armed: state/async1.check.sh
+stdout: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4221 is completed from head b1ca729aeb3050ee0c084b7378dbcbf31490f206
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4221 is active and mergeable, with every branch policy passing at head b1ca729aeb3050ee0c084b7378dbcbf31490f206
+[exit 0]
+CHECK ok   - async: confirmed after re-reading
+
+### G. Azure DevOps accepts the completion but has not finished within the bounded wait
+$ fm-pr-merge.sh slow1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4222 -- --squash
+stdout: armed: state/slow1.check.sh
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4222 is active and mergeable, with every branch policy passing at head ac6534710a4b0057622bcb0e6f04be139a57779c
+stderr: actionable: Azure DevOps accepted the completion request for https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4222 but has not confirmed it landed yet; the merge poll remains armed and reports the merge
+[exit 0]
+CHECK ok   - slow: exits 0 without claiming it landed
+CHECK ok   - slow: says the completion is accepted but unconfirmed, and the poll remains armed
+$ bash state/slow1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - slow: the poll is silent while Azure DevOps is still completing
+$ bash state/slow1.check.sh
+merged
+[exit 0, 6 bytes of output]
+CHECK ok   - slow: the poll reports merged once Azure DevOps finishes
+
+### H. The pull request is abandoned by someone else right after the request fails
+$ fm-pr-merge.sh gone1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4223 -- --squash
+stdout: armed: state/gone1.check.sh
+stderr: WARNING: queued wakes pending - drain them with bin/fm-wake-drain.sh before anything else.
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4223 is active and mergeable, with every branch policy passing at head 27e919dab412cba416c001b2c028fe6239725f30
+stderr: error: > ERROR: Conflict({"message":"TF401181: The pull request cannot be edited due to its state."})
+stderr: error: the completion request for https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4223 failed, and the pull request has not read back as completed from head 27e919dab412cba416c001b2c028fe6239725f30: it reads back abandoned
+[exit 1]
+CHECK ok   - abandoned: fails and names the read-back
+CHECK ok   - abandoned: the target branch did not move
+
+### result: 0 check failure(s); simulator violations: 0

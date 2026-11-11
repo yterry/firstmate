@@ -1,0 +1,42 @@
+$ ls <scratch>/home/config
+pr-degraded-watch
+[exit 0]
+$ fm-pr-check.sh scan
+
+[0 bytes]
+CHECK ok   - the reported pull request is recorded with the degraded watch enabled
+CHECK ok   - its poll is armed and byte-identical to bin/fm-pr-poll.sh
+CHECK ok   - no degraded or merge-train marker is left for Azure DevOps
+CHECK ok   - no registration backup directory is left behind
+$ bash state/deg1.check.sh
+
+[exit 0, 0 bytes of output]
+CHECK ok   - active: silent (no degraded line for Azure DevOps)
+
+### re-arming the same pull request while the forge read is failing keeps the registration
+$ fm-pr-check.sh deg1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stdout: armed: state/deg1.check.sh
+[exit 0]
+CHECK ok   - an unreadable forge does not drop the recorded pull request
+CHECK ok   - the poll is still armed
+
+### a draft is still refused with the degraded watch enabled, and nothing is recorded
+$ fm-pr-check.sh deg2 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4218
+stderr: error: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4218 is a draft pull request; a draft cannot be merged, so merge monitoring would wait for an event that cannot occur - mark it ready for review and arm again, or declare a wait instead of done if the draft is deliberate
+[exit 1]
+CHECK ok   - draft refused
+CHECK ok   - nothing recorded or armed for the draft
+
+### completion and the merged wake
+$ fm-pr-merge.sh deg1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/deg1.check.sh
+stdout: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is completed from head f92e4988d26479fa31f529fccc33477cfc9a7c66
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is active and mergeable, with every branch policy passing at head f92e4988d26479fa31f529fccc33477cfc9a7c66
+[exit 0]
+CHECK ok   - completes
+$ bash state/deg1.check.sh
+merged
+[exit 0, 6 bytes of output]
+CHECK ok   - merged
+
+### result: 0 check failure(s); simulator violations: 0

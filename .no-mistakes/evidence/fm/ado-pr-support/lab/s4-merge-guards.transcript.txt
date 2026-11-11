@@ -1,0 +1,257 @@
+
+### required build is red
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stderr:   - required check "CI build" is rejected, not approved
+[exit 1]
+CHECK ok   - red: exit 1
+CHECK ok   - red: names the reason (required check "CI build" is rejected, not approved)
+CHECK ok   - red: no completion request was sent
+CHECK ok   - red: the target branch did not move
+CHECK ok   - red: the pull request is still active
+CHECK ok   - red: the refusal still records pr= and leaves the poll armed
+
+### required build still running, and reviewers not yet approved (both reported)
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stderr:   - required check "CI build" is running, not approved
+stderr:   - required policy "Minimum number of reviewers" is running, not approved
+[exit 1]
+CHECK ok   - pending: exit 1
+CHECK ok   - pending: names the reason (required check "CI build" is running, not approved)
+CHECK ok   - pending: no completion request was sent
+CHECK ok   - pending: the target branch did not move
+CHECK ok   - pending: the pull request is still active
+CHECK ok   - pending: the unapproved reviewer policy is reported too
+
+### build approved, but for an older source commit
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stderr:   - build "CI build" passed at 3434343434343434343434343434343434343434, not at the current head 061cc576ed32f702b3d52f0444eaf2a867c7aabd
+[exit 1]
+CHECK ok   - stalebuild: exit 1
+CHECK ok   - stalebuild: names the reason (passed at 3434343434343434343434343434343434343434, not at the current head)
+CHECK ok   - stalebuild: no completion request was sent
+CHECK ok   - stalebuild: the target branch did not move
+CHECK ok   - stalebuild: the pull request is still active
+
+### build approved at the head, but expired
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stderr:   - build "CI build" passed, but its result has expired or is not current
+[exit 1]
+CHECK ok   - expired: exit 1
+CHECK ok   - expired: names the reason (its result has expired or is not current)
+CHECK ok   - expired: no completion request was sent
+CHECK ok   - expired: the target branch did not move
+CHECK ok   - expired: the pull request is still active
+
+### required external status check pending
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stderr:   - required check "security/scan" is queued, not approved
+[exit 1]
+CHECK ok   - status: exit 1
+CHECK ok   - status: names the reason (required check "security/scan" is queued, not approved)
+CHECK ok   - status: no completion request was sent
+CHECK ok   - status: the target branch did not move
+CHECK ok   - status: the pull request is still active
+
+### optional check red: refused, a waiver naming another check does not help, and --allow-red on a required check is refused
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stderr:   - optional check "lint" is rejected, not approved
+[exit 1]
+CHECK ok   - optred: exit 1
+CHECK ok   - optred: names the reason (optional check "lint" is rejected, not approved)
+CHECK ok   - optred: no completion request was sent
+CHECK ok   - optred: the target branch did not move
+CHECK ok   - optred: the pull request is still active
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 --allow-red typo -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stderr:   - optional check "lint" is rejected, not approved
+[exit 1]
+CHECK ok   - optother: exit 1
+CHECK ok   - optother: names the reason (optional check "lint" is rejected, not approved)
+CHECK ok   - optother: no completion request was sent
+CHECK ok   - optother: the target branch did not move
+CHECK ok   - optother: the pull request is still active
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 --allow-red CI build -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stderr:   - required check "CI build" is rejected, not approved, and --allow-red cannot waive it because Azure DevOps enforces a required policy at completion
+[exit 1]
+CHECK ok   - reqwaive: exit 1
+CHECK ok   - reqwaive: names the reason (--allow-red cannot waive it because Azure DevOps enforces a required policy at completion)
+CHECK ok   - reqwaive: no completion request was sent
+CHECK ok   - reqwaive: the target branch did not move
+CHECK ok   - reqwaive: the pull request is still active
+
+### --allow-missing does not apply and makes no forge call
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 --allow-missing CI build -- --squash
+stderr: error: --allow-missing does not apply to Azure DevOps, which reports every branch policy that applies to the pull request as an evaluation, so a required check that has not reported is a blocking policy Azure DevOps itself enforces at completion
+[exit 2]
+CHECK ok   - missing: exit 2
+CHECK ok   - missing: names the reason (--allow-missing does not apply to Azure DevOps)
+CHECK ok   - missing: no completion request was sent
+CHECK ok   - missing: the target branch did not move
+CHECK ok   - missing: the pull request is still active
+CHECK ok   - missing: az was never called
+
+### the pull request turned into a draft
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stderr:   - the pull request is a draft
+[exit 1]
+CHECK ok   - draft: exit 1
+CHECK ok   - draft: names the reason (the pull request is a draft)
+CHECK ok   - draft: no completion request was sent
+CHECK ok   - draft: the target branch did not move
+CHECK ok   - draft: the pull request is still active
+
+### the merge has conflicts
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stderr:   - mergeStatus is "conflicts", not succeeded
+[exit 1]
+CHECK ok   - conflicts: exit 1
+CHECK ok   - conflicts: names the reason (mergeStatus is "conflicts", not succeeded)
+CHECK ok   - conflicts: no completion request was sent
+CHECK ok   - conflicts: the target branch did not move
+CHECK ok   - conflicts: the pull request is still active
+
+### Azure DevOps has not computed a source commit yet
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: could not read the Azure DevOps pull request source commit before merging; Azure DevOps may still be computing its merge
+[exit 1]
+CHECK ok   - nosource: exit 1
+CHECK ok   - nosource: names the reason (could not read the Azure DevOps pull request source commit before merging)
+CHECK ok   - nosource: no completion request was sent
+CHECK ok   - nosource: the target branch did not move
+CHECK ok   - nosource: the pull request is still active
+
+### the branch policies cannot be read
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash
+stdout: armed: state/guard1.check.sh
+stderr: error: could not read the Azure DevOps branch policies before merging
+[exit 1]
+CHECK ok   - nopolicies: exit 1
+CHECK ok   - nopolicies: names the reason (could not read the Azure DevOps branch policies before merging)
+CHECK ok   - nopolicies: no completion request was sent
+CHECK ok   - nopolicies: the target branch did not move
+CHECK ok   - nopolicies: the pull request is still active
+
+### merge strategy policy
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217
+stdout: armed: state/guard1.check.sh
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is active and mergeable, with every branch policy passing at head 061cc576ed32f702b3d52f0444eaf2a867c7aabd
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217: the repository allows several merge strategies (squash, rebase) and neither the caller nor the pull request names one; name one with --squash, --merge, --rebase, or --method rebaseMerge
+[exit 1]
+CHECK ok   - several: exit 1
+CHECK ok   - several: names the reason (the repository allows several merge strategies (squash, rebase) and neither the caller nor the pull request names one)
+CHECK ok   - several: no completion request was sent
+CHECK ok   - several: the target branch did not move
+CHECK ok   - several: the pull request is still active
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --merge
+stdout: armed: state/guard1.check.sh
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is active and mergeable, with every branch policy passing at head 061cc576ed32f702b3d52f0444eaf2a867c7aabd
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217: merge strategy noFastForward is not one the repository's merge strategy policy allows (squash, rebase)
+[exit 1]
+CHECK ok   - notallowed: exit 1
+CHECK ok   - notallowed: names the reason (merge strategy noFastForward is not one the repository's merge strategy policy allows (squash, rebase))
+CHECK ok   - notallowed: no completion request was sent
+CHECK ok   - notallowed: the target branch did not move
+CHECK ok   - notallowed: the pull request is still active
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --method fancy
+stdout: armed: state/guard1.check.sh
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is active and mergeable, with every branch policy passing at head 061cc576ed32f702b3d52f0444eaf2a867c7aabd
+stderr: error: refusing to merge https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217: unknown Azure DevOps merge strategy 'fancy'; use --squash, --merge, --rebase, or --method rebaseMerge
+[exit 1]
+CHECK ok   - unknown: exit 1
+CHECK ok   - unknown: names the reason (unknown Azure DevOps merge strategy 'fancy')
+CHECK ok   - unknown: no completion request was sent
+CHECK ok   - unknown: the target branch did not move
+CHECK ok   - unknown: the pull request is still active
+
+### forge flags that would bypass policy, auto-complete, or delete the branch
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash --admin
+stderr: error: extra merge arguments must not request auto-merge, a protection bypass, or branch deletion; pass --attended-override only for an explicit captain instruction
+[exit 1]
+CHECK ok   - flagadmin: exit 1
+CHECK ok   - flagadmin: names the reason (must not request auto-merge, a protection bypass, or branch deletion)
+CHECK ok   - flagadmin: no completion request was sent
+CHECK ok   - flagadmin: the target branch did not move
+CHECK ok   - flagadmin: the pull request is still active
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash --auto
+stderr: error: extra merge arguments must not request auto-merge, a protection bypass, or branch deletion; pass --attended-override only for an explicit captain instruction
+[exit 1]
+CHECK ok   - flagauto: exit 1
+CHECK ok   - flagauto: names the reason (must not request auto-merge, a protection bypass, or branch deletion)
+CHECK ok   - flagauto: no completion request was sent
+CHECK ok   - flagauto: the target branch did not move
+CHECK ok   - flagauto: the pull request is still active
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash --delete-branch
+stderr: error: extra merge arguments must not request auto-merge, a protection bypass, or branch deletion; pass --attended-override only for an explicit captain instruction
+[exit 1]
+CHECK ok   - flagdeletebranch: exit 1
+CHECK ok   - flagdeletebranch: names the reason (must not request auto-merge, a protection bypass, or branch deletion)
+CHECK ok   - flagdeletebranch: no completion request was sent
+CHECK ok   - flagdeletebranch: the target branch did not move
+CHECK ok   - flagdeletebranch: the pull request is still active
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 -- --squash -d
+stderr: error: extra merge arguments must not request auto-merge, a protection bypass, or branch deletion; pass --attended-override only for an explicit captain instruction
+[exit 1]
+CHECK ok   - flagd: exit 1
+CHECK ok   - flagd: names the reason (must not request auto-merge, a protection bypass, or branch deletion)
+CHECK ok   - flagd: no completion request was sent
+CHECK ok   - flagd: the target branch did not move
+CHECK ok   - flagd: the pull request is still active
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 --attended-override -- --squash --admin
+stdout: armed: state/guard1.check.sh
+stderr: error: extra merge arguments are not yet supported for Azure DevOps merges
+[exit 1]
+CHECK ok   - flagoverride: exit 1
+CHECK ok   - flagoverride: names the reason (extra merge arguments are not yet supported for Azure DevOps merges)
+CHECK ok   - flagoverride: no completion request was sent
+CHECK ok   - flagoverride: the target branch did not move
+CHECK ok   - flagoverride: the pull request is still active
+
+### a URL in the same organization whose id belongs to another repository
+$ fm-pr-merge.sh guard2 https://dev.azure.com/fm-lab-org/Lab%20Project/_git/some-other-repo/pullrequest/4217 -- --squash
+stderr: error: https://dev.azure.com/fm-lab-org/Lab%20Project/_git/some-other-repo/pullrequest/4217 does not name a pull request in that project and repository: Azure DevOps reads pull request 4217 back as another repository's
+[exit 1]
+CHECK ok   - otherrepo: refused
+CHECK ok   - otherrepo: names the mismatch
+CHECK ok   - otherrepo: nothing recorded or armed
+CHECK ok   - otherrepo: no completion request was sent
+
+### a Gerrit-style or unknown URL for the same task is not silently treated as Azure DevOps
+$ fm-pr-merge.sh guard2 https://dev.azure.com/fm-lab-org/Lab%20Project/_git/lab-repo/pullrequests/4217
+stderr: error: invalid PR merge request
+[exit 2]
+CHECK ok   - badurl: exit 2
+
+### after every refusal, the same pull request still completes once it is green
+$ fm-pr-merge.sh guard1 https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 --allow-red lint
+stdout: armed: state/guard1.check.sh
+stdout: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is completed from head 061cc576ed32f702b3d52f0444eaf2a867c7aabd
+stderr: verified: https://fm-lab-org.visualstudio.com/DefaultCollection/Lab%20Project/_git/lab-repo/pullrequest/4217 is active and mergeable, with every branch policy passing at head 061cc576ed32f702b3d52f0444eaf2a867c7aabd except optional check lint, waived by --allow-red
+[exit 0]
+CHECK ok   - waived: exit 0
+CHECK ok   - waived: the waiver is reported
+CHECK ok   - waived: the only allowed strategy (squash) was named without the caller choosing
+CHECK ok   - waived: exactly one completion request in the whole scenario
+CHECK ok   - waived: landing confirmed
+CHECK ok   - waived: the target branch moved
+
+### result: 0 check failure(s); simulator violations: 0
